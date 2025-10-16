@@ -1,10 +1,15 @@
-name: Create HyperTP Release
+name: Create Release with JAR
 
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '1.1.0'
 
 jobs:
   release:
@@ -12,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Extract version
@@ -21,10 +26,10 @@ jobs:
         if [[ ${{ github.ref }} == refs/tags/* ]]; then
           VERSION=${GITHUB_REF#refs/tags/v}
         else
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          VERSION="${{ github.event.inputs.version }}"
         fi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "🎯 Release version: $VERSION"
+        echo "🎯 Building version: $VERSION"
 
     - name: Set up JDK 21
       uses: actions/setup-java@v4
@@ -33,64 +38,78 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    - name: Build release
+    - name: Build release JAR
       run: |
-        echo "🏗️ Building release version..."
+        echo "🏗️ Building release JAR..."
         mvn -B clean package -DskipTests
-        echo "✅ Release build completed"
+        
+        JAR_FILE="target/HyperTP-${{ steps.version.outputs.version }}.jar"
+        if [ ! -f "$JAR_FILE" ]; then
+          echo "❌ JAR file not found: $JAR_FILE"
+          exit 1
+        fi
+        
+        echo "✅ JAR created: $JAR_FILE"
+        ls -la target/*.jar
 
-    - name: Create Release
+    - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: HyperTP ${{ github.ref_name }}
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: HyperTP v${{ steps.version.outputs.version }}
         body: |
-          # 🚀 HyperTP ${{ github.ref_name }}
+          # 🚀 HyperTP v${{ steps.version.outputs.version }}
           
           Advanced teleportation plugin with GUI support for Minecraft 1.21+
           
           ## ✨ Features
-          - 🏠 Home System with GUI
-          - 📞 TPA Request System  
-          - 🎯 Random Teleport (RTP)
-          - ↩️ Back to Previous Location
-          - 🌐 Multi-language Support
-          - ⚡ Folia & Paper Support
-          - 🎨 Customizable GUIs
-          - ⏱️ Cooldown System
+          - 🏠 **Home System** - Set, delete, and teleport to homes with GUI
+          - 📞 **TPA System** - Send and accept teleport requests
+          - 🎯 **RTP** - Random teleport to safe locations
+          - ↩️ **Back System** - Return to previous location
+          - 🌐 **Multi-language** - English & Vietnamese support
+          - ⚡ **Folia Support** - Optimized for multi-threaded servers
+          - 🎨 **Custom GUIs** - Fully customizable interfaces
           
           ## 📋 Commands
-          ```
+          ```yaml
           /home [name]       # Teleport to home
           /sethome <name>    # Set a home
-          /delhome <name>    # Delete a home  
+          /delhome <name>    # Delete a home
           /homelist          # Open homes GUI
-          /tpa <player>      # Request to teleport
-          /tpahere <player>  # Request player to you
+          /tpa <player>      # Request to teleport to player
+          /tpahere <player>  # Request player to teleport to you
           /tpaccept          # Accept TPA request
           /tpdeny            # Deny TPA request
-          /back              # Return to last location
+          /back              # Return to previous location
           /rtp               # Random teleport
           /htp reload        # Reload configuration
           /htp help          # Show help
           ```
           
           ## ⚙️ Requirements
-          - Minecraft: 1.21-1.21.8
-          - Server: Paper or Folia
-          - Java: 21+
+          - Minecraft Server: 1.21 - 1.21.8
+          - Server Type: Paper or Folia
+          - Java Version: 21+
           
           ## 🚀 Installation
           1. Download the JAR file below
-          2. Place in plugins/ folder
-          3. Restart server
+          2. Place in your server's `plugins/` folder
+          3. Restart the server
+          4. Configure in `plugins/HyperTP/config.yml`
+          
+          ## 📁 Files Included
+          - `HyperTP-${{ steps.version.outputs.version }}.jar` - Main plugin file
+          
+          ---
+          **Author**: H_Azee
         draft: false
         prerelease: false
 
-    - name: Upload Release Asset
+    - name: Upload JAR to Release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,11 +119,61 @@ jobs:
         asset_name: HyperTP-${{ steps.version.outputs.version }}.jar
         asset_content_type: application/java-archive
 
-    - name: Upload to artifacts
+    - name: Upload JAR to artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: HyperTP-${{ steps.version.outputs.version }}
+        name: HyperTP-Release-${{ steps.version.outputs.version }}
         path: target/HyperTP-*.jar
+        retention-days: 90
+
+    - name: Create release notes
+      run: |
+        echo "📝 Creating release notes..."
+        cat > RELEASE_NOTES.md << EOF
+# HyperTP v${{ steps.version.outputs.version }} Release Notes
+
+## Installation Instructions
+
+1. **Download** the JAR file from this release
+2. **Place** in your server's \`plugins/\` folder
+3. **Restart** your Minecraft server
+4. **Configure** the plugin in \`plugins/HyperTP/config.yml\`
+
+## Configuration Files
+
+The plugin will automatically generate:
+- \`config.yml\` - Main configuration
+- \`langs/en.yml\` - English messages
+- \`langs/vn.yml\` - Vietnamese messages
+- \`gui/homegui.yml\` - Home GUI layout
+- \`gui/tpagui.yml\` - TPA GUI layout
+- \`gui/rtpgui.yml\` - RTP GUI layout
+
+## Quick Start
+
+After installation, players can use:
+\`\`\`
+/home [name]    - Teleport to your home
+/sethome <name> - Create a new home
+/tpa <player>   - Request to teleport to player
+/rtp           - Random teleport
+/htp help      - Show all commands
+\`\`\`
+
+## Support
+
+If you encounter any issues, please check the configuration files first. Most issues can be resolved by adjusting settings in \`config.yml\`.
+
+**Build Date**: $(date -u)
+**Java Version**: 21
+**Minecraft**: 1.21-1.21.8
+EOF
+
+    - name: Upload release notes
+      uses: actions/upload-artifact@v4
+      with:
+        name: Release-Notes-${{ steps.version.outputs.version }}
+        path: RELEASE_NOTES.md
         retention-days: 90
 
     - name: Release Summary
@@ -112,10 +181,19 @@ jobs:
         echo "🎊 HyperTP Release Created!" >> $GITHUB_STEP_SUMMARY
         echo "==========================" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Status**: ✅ Released" >> $GITHUB_STEP_SUMMARY
-        echo "**Java**: 21" >> $GITHUB_STEP_SUMMARY
-        echo "**Build Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "## 📦 Release Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Released" >> $GITHUB_STEP_SUMMARY
+        echo "- **Java**: 21" >> $GITHUB_STEP_SUMMARY
+        echo "- **Minecraft**: 1.21-1.21.8" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## 📦 Download" >> $GITHUB_STEP_SUMMARY
-        echo "JAR file available in GitHub Releases!" >> $GITHUB_STEP_SUMMARY
+        echo "## 📥 Download Links" >> $GITHUB_STEP_SUMMARY
+        echo "1. **GitHub Release**: [Download JAR](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+        echo "2. **Artifacts**: JAR file and release notes available in artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Installation" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download the JAR file" >> $GITHUB_STEP_SUMMARY
+        echo "2. Place in \`plugins/\` folder" >> $GITHUB_STEP_SUMMARY
+        echo "3. Restart server" >> $GITHUB_STEP_SUMMARY
+        echo "4. Use \`/htp help\` for commands" >> $GITHUB_STEP_SUMMARY
