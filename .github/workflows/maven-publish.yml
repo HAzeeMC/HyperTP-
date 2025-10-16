@@ -1,0 +1,232 @@
+name: Publish HyperTP to GitHub Packages
+
+on:
+  release:
+    types: [published, created]
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      version:
+        description: 'Version to publish'
+        required: true
+        default: '1.1.0'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  publish:
+    name: Publish HyperTP Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+        server-id: github
+        server-username: GITHUB_ACTOR
+        server-password: GITHUB_TOKEN
+
+    - name: Validate POM
+      run: |
+        echo "Validating Maven POM..."
+        mvn validate -q
+        echo "✅ POM validation successful"
+
+    - name: Build with Maven
+      run: |
+        echo "Building HyperTP plugin..."
+        mvn -B clean compile -DskipTests
+        echo "✅ Build completed successfully"
+
+    - name: Run tests
+      run: |
+        echo "Running tests..."
+        mvn -B test
+        echo "✅ Tests completed"
+
+    - name: Package JAR
+      run: |
+        echo "Packaging JAR file..."
+        mvn -B package -DskipTests
+        echo "✅ JAR packaging completed"
+        
+        # Display JAR info
+        JAR_FILE=$(ls target/HyperTP-*.jar)
+        echo "JAR File: $JAR_FILE"
+        ls -la target/*.jar
+
+    - name: Configure Maven for GitHub Packages
+      run: |
+        # Create settings.xml for GitHub Packages
+        cat > ~/.m2/settings.xml <<EOF
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <servers>
+            <server>
+              <id>github</id>
+              <username>\${{ github.actor }}</username>
+              <password>\${{ secrets.GITHUB_TOKEN }}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+        echo "✅ Maven settings configured for GitHub Packages"
+
+    - name: Publish to GitHub Packages
+      run: |
+        echo "Publishing to GitHub Packages..."
+        mvn -B deploy -DskipTests
+        echo "✅ Successfully published to GitHub Packages"
+
+    - name: Get version information
+      id: version
+      run: |
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $VERSION"
+        echo "Release version: ${{ github.event.release.tag_name }}"
+
+    - name: Upload JAR to Release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: target/HyperTP-${{ steps.version.outputs.version }}.jar
+        asset_name: HyperTP-${{ steps.version.outputs.version }}.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload JAR as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-${{ steps.version.outputs.version }}
+        path: |
+          target/HyperTP-*.jar
+          target/HyperTP-*.pom
+        retention-days: 90
+        overwrite: true
+
+    - name: Generate build info
+      run: |
+        echo "📦 Build Information" >> $GITHUB_STEP_SUMMARY
+        echo "===================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Plugin:** HyperTP" >> $GITHUB_STEP_SUMMARY
+        echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Java Version:** 21" >> $GITHUB_STEP_SUMMARY
+        echo "**Minecraft:** 1.21-1.21.8" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📁 Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- **JAR File:** HyperTP-${{ steps.version.outputs.version }}.jar" >> $GITHUB_STEP_SUMMARY
+        echo "- **POM File:** HyperTP-${{ steps.version.outputs.version }}.pom" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Installation" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download the JAR file from artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "2. Place in your server's `plugins/` folder" >> $GITHUB_STEP_SUMMARY
+        echo "3. Restart the server" >> $GITHUB_STEP_SUMMARY
+
+    - name: Notify success
+      if: success()
+      run: |
+        echo "🎉 HyperTP v${{ steps.version.outputs.version }} published successfully!"
+        echo "📦 Available in GitHub Packages and Release Assets"
+
+  quality-check:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    needs: publish
+    if: always()
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: HyperTP-${{ needs.publish.outputs.version }}
+        path: downloaded-artifact
+
+    - name: Verify JAR integrity
+      run: |
+        echo "🔍 Verifying JAR file..."
+        cd downloaded-artifact
+        JAR_FILE=$(ls *.jar)
+        
+        # Check if JAR is valid
+        jar -tf "$JAR_FILE" > /dev/null
+        echo "✅ JAR file structure is valid"
+        
+        # Check file size
+        FILE_SIZE=$(stat -c%s "$JAR_FILE")
+        echo "📊 JAR Size: $((FILE_SIZE / 1024)) KB"
+        
+        # Check if plugin.yml exists in JAR
+        if jar -tf "$JAR_FILE" | grep -q "plugin.yml"; then
+          echo "✅ plugin.yml found in JAR"
+        else
+          echo "❌ plugin.yml missing in JAR"
+          exit 1
+        fi
+        
+        # Extract and check plugin.yml
+        jar -xf "$JAR_FILE" plugin.yml
+        if [ -f "plugin.yml" ]; then
+          echo "📄 plugin.yml content:"
+          cat plugin.yml | grep -E "(name|version|main|api-version)"
+        fi
+
+    - name: Security scan
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: high
+
+    - name: Run static analysis
+      run: |
+        echo "🔍 Running static analysis..."
+        mvn -B spotbugs:check
+        echo "✅ Static analysis completed"
+
+  deploy-notification:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [publish, quality-check]
+    if: always()
+
+    steps:
+    - name: Notify deployment status
+      run: |
+        if ${{ needs.publish.result == 'success' && needs.quality-check.result == 'success' }}; then
+          echo "🎊 DEPLOYMENT SUCCESSFUL!"
+          echo "HyperTP v${{ needs.publish.outputs.version }} is ready for use!"
+          echo "📦 Download from GitHub Releases or Packages"
+        else
+          echo "❌ DEPLOYMENT FAILED!"
+          echo "Check the workflow logs for details"
+          exit 1
+        fi
