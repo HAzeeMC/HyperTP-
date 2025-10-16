@@ -1,0 +1,67 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        type: boolean
+        default: false
+      build_profile:
+        description: 'Build profile'
+        required: false
+        type: choice
+        default: 'dev'
+        options:
+        - dev
+        - prod
+
+jobs:
+  manual-build:
+    name: Manual Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build with selected options
+      run: |
+        echo "🏗️ Starting manual build..."
+        echo "Profile: ${{ github.event.inputs.build_profile }}"
+        echo "Skip Tests: ${{ github.event.inputs.skip_tests }}"
+        
+        if [ "${{ github.event.inputs.skip_tests }}" = "true" ]; then
+          mvn -B clean package -P ${{ github.event.inputs.build_profile }} -DskipTests
+        else
+          mvn -B clean package -P ${{ github.event.inputs.build_profile }}
+        fi
+        echo "✅ Manual build completed"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-Manual-Build
+        path: target/HyperTP-*.jar
+        retention-days: 30
+
+    - name: Manual Build Summary
+      run: |
+        echo "🔧 Manual Build Complete" >> $GITHUB_STEP_SUMMARY
+        echo "=======================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Triggered By**: Manual workflow" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Profile**: ${{ github.event.inputs.build_profile }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Tests Skipped**: ${{ github.event.inputs.skip_tests }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📥 Download" >> $GITHUB_STEP_SUMMARY
+        echo "JAR file available in artifacts!" >> $GITHUB_STEP_SUMMARY
