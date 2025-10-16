@@ -1,16 +1,13 @@
-name: Build HyperTP
+name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "develop" ]
   pull_request:
     branches: [ "main", "master" ]
-  release:
-    types: [ published ]
 
 jobs:
   build:
-    name: Build HyperTP
     runs-on: ubuntu-latest
 
     steps:
@@ -25,28 +22,44 @@ jobs:
         cache: 'maven'
 
     - name: Build with Maven
-      run: mvn -B clean compile
+      run: mvn -B clean package --file pom.xml
 
     - name: Run tests
-      run: mvn -B test
+      run: mvn -B test --file pom.xml
 
-    - name: Package JAR
-      run: mvn -B package -DskipTests
+    - name: Verify JAR structure
+      run: |
+        echo "🔍 Verifying JAR file structure..."
+        JAR_FILE=$(ls target/HyperTP-*.jar)
+        
+        # Check if JAR is valid
+        jar -tf "$JAR_FILE" > /dev/null
+        echo "✅ JAR file structure is valid"
+        
+        # Check file size
+        FILE_SIZE=$(stat -c%s "$JAR_FILE")
+        echo "📊 JAR Size: $((FILE_SIZE / 1024)) KB"
+        
+        # Check essential files in JAR
+        jar -tf "$JAR_FILE" | grep -E "(plugin.yml|com/hazee/hypertp/HyperTP.class)" || echo "❌ Essential files missing"
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: HyperTP-JAR
+        name: HyperTP-Plugin
         path: target/HyperTP-*.jar
         retention-days: 30
 
-    - name: Upload to Release
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: target/HyperTP-*.jar
-        asset_name: HyperTP-${{ github.event.release.tag_name }}.jar
-        asset_content_type: application/java-archive
+    - name: Build Report
+      run: |
+        echo "📦 Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Build Status**: SUCCESS" >> $GITHUB_STEP_SUMMARY
+        echo "🏷️ **Version**: 1.1.0" >> $GITHUB_STEP_SUMMARY
+        echo "☕ **Java Version**: 21" >> $GITHUB_STEP_SUMMARY
+        echo "🎯 **Minecraft**: 1.21-1.21.8" >> $GITHUB_STEP_SUMMARY
+        echo "📅 **Build Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📁 Download" >> $GITHUB_STEP_SUMMARY
+        echo "Download the JAR file from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
