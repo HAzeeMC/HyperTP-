@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.hazee</groupId>
@@ -18,7 +18,12 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.deploy.skip>false</maven.deploy.skip>
+        <maven.compiler.release>21</maven.compiler.release>
+        
+        <!-- Build properties -->
+        <build.number>${project.version}</build.number>
+        <build.timestamp>${maven.build.timestamp}</build.timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
 
     <repositories>
@@ -26,19 +31,62 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.yml</include>
+                    <include>**/*.yaml</include>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.yml</exclude>
+                    <exclude>**/*.yaml</exclude>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
+            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -46,10 +94,17 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                    <release>21</release>
                     <encoding>UTF-8</encoding>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
+            <!-- Shade Plugin for packaging -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -69,94 +124,224 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/LICENSE</exclude>
+                                        <exclude>META-INF/LICENSE.txt</exclude>
+                                        <exclude>META-INF/NOTICE</exclude>
+                                        <exclude>META-INF/NOTICE.txt</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.hazee.hypertp.HyperTP</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Source plugin for GitHub Packages -->
+            <!-- Jar Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>H_Azee</Built-By>
+                            <Build-Version>${project.version}</Build-Version>
+                            <Build-Timestamp>${build.timestamp}</Build-Timestamp>
+                            <Java-Version>${maven.compiler.source}</Java-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Resources Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <escapeString>\</escapeString>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire Plugin for testing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- Clean Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>target</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <!-- Build Helper Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
-                        <phase>package</phase>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>jar-no-fork</goal>
+                            <goal>add-source</goal>
                         </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/java</source>
+                            </sources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Javadoc plugin -->
+            <!-- Versions Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.16.0</version>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!-- Development Profile -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <build.env>development</build.env>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <debug>true</debug>
+                            <debuglevel>lines,vars,source</debuglevel>
+                            <optimize>false</optimize>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Production Profile -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <build.env>production</build.env>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <debug>false</debug>
+                            <optimize>true</optimize>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Testing Profile -->
+        <profile>
+            <id>test</id>
+            <properties>
+                <build.env>testing</build.env>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
+                                <include>**/Test*.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/Abstract*.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <reporting>
+        <plugins>
+            <!-- Javadoc Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.6.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <doclint>none</doclint>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                    <footer>HyperTP - Advanced Teleportation Plugin</footer>
+                    <bottom>Copyright © 2024 H_Azee. All rights reserved.</bottom>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire Report Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.1.2</version>
             </plugin>
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.yml</include>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub H_Azee Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/H_Azee/HyperTP</url>
-        </repository>
-    </distributionManagement>
-
-    <scm>
-        <connection>scm:git:git://github.com/H_Azee/HyperTP.git</connection>
-        <developerConnection>scm:git:ssh://github.com:H_Azee/HyperTP.git</developerConnection>
-        <url>https://github.com/H_Azee/HyperTP</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <developers>
-        <developer>
-            <id>h_azee</id>
-            <name>H_Azee</name>
-            <url>https://github.com/H_Azee</url>
-            <roles>
-                <role>Project Owner</role>
-                <role>Developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    </reporting>
 </project>
