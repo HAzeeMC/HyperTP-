@@ -1,0 +1,151 @@
+name: Create HyperTP Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version'
+        required: true
+        default: '1.1.0'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Extract version
+      id: version
+      run: |
+        if [[ ${{ github.ref }} == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION="${{ github.event.inputs.release_version }}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "🎯 Release version: $VERSION"
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build release
+      run: |
+        echo "🏗️ Building release version..."
+        mvn -B clean package -DskipTests
+        echo "✅ Release build completed"
+
+    - name: Verify release JAR
+      run: |
+        echo "🔍 Verifying release JAR..."
+        JAR_FILE="target/HyperTP-${{ steps.version.outputs.version }}.jar"
+        
+        if [ ! -f "$JAR_FILE" ]; then
+          echo "❌ JAR file not found: $JAR_FILE"
+          exit 1
+        fi
+        
+        # Basic validation
+        jar -tf "$JAR_FILE" > /dev/null
+        echo "✅ JAR is valid"
+        
+        # Show JAR contents
+        echo "📁 JAR Contents Overview:"
+        jar -tf "$JAR_FILE" | grep -E "(plugin.yml|com/hazee/)" | head -10
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: HyperTP v${{ steps.version.outputs.version }}
+        body: |
+          # 🚀 HyperTP v${{ steps.version.outputs.version }}
+          
+          Advanced teleportation plugin with GUI support for Minecraft 1.21+
+          
+          ## ✨ Features
+          - 🏠 **Home System** - Set, delete, and teleport to homes with GUI
+          - 📞 **TPA System** - Send and accept teleport requests
+          - 🎯 **RTP** - Random teleport to safe locations
+          - ↩️ **Back System** - Return to previous location
+          - 🌐 **Multi-language** - English & Vietnamese support
+          - ⚡ **Folia Support** - Optimized for multi-threaded servers
+          - 🎨 **Custom GUIs** - Fully customizable interfaces
+          - ⏱️ **Cooldown System** - Customizable timers
+          
+          ## 📋 Commands
+          ```yaml
+          /home [name]       # Teleport to home
+          /sethome <name>    # Set a home
+          /delhome <name>    # Delete a home
+          /homelist          # Open homes GUI
+          /tpa <player>      # Request to teleport to player
+          /tpahere <player>  # Request player to teleport to you
+          /tpaccept          # Accept TPA request
+          /tpdeny            # Deny TPA request
+          /back              # Return to previous location
+          /rtp               # Random teleport
+          /htp reload        # Reload configuration
+          /htp help          # Show help
+          ```
+          
+          ## ⚙️ Requirements
+          - Minecraft Server: 1.21 - 1.21.8
+          - Server Type: Paper or Folia
+          - Java Version: 21+
+          
+          ## 🚀 Installation
+          1. Download the JAR file below
+          2. Place in your server's `plugins/` folder
+          3. Restart the server
+          4. Configure in `plugins/HyperTP/config.yml`
+          
+          ## 🐛 Bug Reports
+          Create an issue on GitHub if you encounter any problems.
+          
+          ---
+          **Author**: H_Azee
+        draft: false
+        prerelease: false
+        files: |
+          target/HyperTP-${{ steps.version.outputs.version }}.jar
+
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-v${{ steps.version.outputs.version }}
+        path: target/HyperTP-${{ steps.version.outputs.version }}.jar
+        retention-days: 90
+
+    - name: Release Summary
+      run: |
+        echo "🎊 HyperTP Release Created!" >> $GITHUB_STEP_SUMMARY
+        echo "==========================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Version**: v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Released" >> $GITHUB_STEP_SUMMARY
+        echo "**Java**: 21" >> $GITHUB_STEP_SUMMARY
+        echo "**Minecraft**: 1.21-1.21.8" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📦 Download Links" >> $GITHUB_STEP_SUMMARY
+        echo "- **GitHub Release**: [Download JAR](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+        echo "- **Artifacts**: Available in artifacts section" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🛠️ Technical Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Total Classes**: 38 Java files" >> $GITHUB_STEP_SUMMARY
+        echo "- **Configuration**: 8 config files" >> $GITHUB_STEP_SUMMARY
+        echo "- **Dependencies**: Paper API only" >> $GITHUB_STEP_SUMMARY
+        echo "- **Compatibility**: Paper & Folia" >> $GITHUB_STEP_SUMMARY
