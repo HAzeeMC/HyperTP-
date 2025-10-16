@@ -4,6 +4,7 @@ import com.hazee.hypertp.HyperTP;
 import com.hazee.hypertp.util.ChatUtil;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player; // ADD THIS IMPORT
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
