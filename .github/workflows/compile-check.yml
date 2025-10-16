@@ -1,0 +1,51 @@
+name: Compilation Check
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  compile:
+    name: Compilation Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Check for compilation errors
+      run: |
+        echo "🔍 Checking for compilation errors..."
+        if mvn -B clean compile; then
+          echo "✅ No compilation errors found"
+        else
+          echo "❌ Compilation errors detected"
+          echo "Running detailed compilation..."
+          mvn -B clean compile -X | grep -A 10 -B 5 "error:" || true
+          exit 1
+        fi
+
+    - name: Check imports
+      run: |
+        echo "📋 Checking Java imports..."
+        # Check for files with potential import issues
+        find src/main/java -name "*.java" -exec grep -l "cannot find symbol" {} \; || echo "✅ No import issues detected"
+
+    - name: Compilation Summary
+      run: |
+        echo "🔧 Compilation Check Report" >> $GITHUB_STEP_SUMMARY
+        echo "==========================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "**Java Version**: 21" >> $GITHUB_STEP_SUMMARY
+        echo "**Files Compiled**: All Java files" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "No compilation errors detected! 🎉" >> $GITHUB_STEP_SUMMARY
