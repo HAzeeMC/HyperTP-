@@ -6,9 +6,10 @@ import com.hazee.hypertp.gui.config.GUIConfigLoader;
 import com.hazee.hypertp.manager.HomeManager;
 import com.hazee.hypertp.model.Home;
 import com.hazee.hypertp.task.TeleportCountdownTask;
+import com.hazee.hypertp.util.ChatUtil; // ADD IF MISSING
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Player; // CONFIRM THIS EXISTS
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
