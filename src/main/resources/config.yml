@@ -1,0 +1,75 @@
+# HyperTP Configuration
+# Author: H_Azee
+config-version: 1.1
+
+# Plugin language (en/vn)
+language: en
+
+# Maximum homes per player
+max-homes:
+  default: 3
+  vip: 5
+  premium: 10
+
+# Cooldowns in seconds
+cooldowns:
+  home: 10
+  back: 5
+  rtp: 60
+  tpa: 30
+  gui: 1
+
+# Teleport delay in seconds
+teleport-delay:
+  home: 3
+  back: 3
+  tpa: 5
+
+# RTP Settings
+rtp:
+  min-distance: 100
+  max-distance: 1000
+  center-x: 0
+  center-z: 0
+  world: "world"  # Specific world for RTP, leave empty for current world
+  avoid-water: true
+  avoid-lava: true
+
+# GUI Settings
+gui:
+  home:
+    title: "&6&lYour Homes"
+    rows: 3
+  tpa:
+    title: "&6&lTeleport Requests"
+    rows: 3
+  rtp:
+    title: "&6&lRandom Teleport"
+    rows: 1
+
+# Sound Settings
+sounds:
+  teleport-start: "ENTITY_ENDERMAN_TELEPORT"
+  teleport-success: "ENTITY_PLAYER_LEVELUP"
+  teleport-failed: "ENTITY_ENDERMAN_SCREAM"
+  gui-open: "UI_BUTTON_CLICK"
+
+# Message Settings
+messages:
+  prefix: "&6[HyperTP]&r"
+  use-prefix: true
+  action-bar-cooldown: true
+
+# Security Settings
+security:
+  check-safe-location: true
+  max-teleport-distance: 10000
+  prevent-cross-world: false
+  allow-nether-portals: true
+  allow-end-portals: true
+
+# Performance Settings
+performance:
+  async-teleport: true
+  chunk-load-timeout: 30
+  max-rtp-attempts: 50

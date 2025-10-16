@@ -1,0 +1,36 @@
+# Home GUI Configuration
+# HyperTP - Author: H_Azee
+
+gui:
+  home:
+    title: "&6&lYour Homes"
+    rows: 3
+    items:
+      home-item:
+        material: "COMPASS"
+        name: "&e%home_name%"
+        lore:
+          - "&7Location: &f%home_location%"
+          - "&7World: &f%home_world%"
+          - ""
+          - "&aClick to teleport!"
+        slot: "auto"
+      
+      close-button:
+        material: "BARRIER"
+        name: "&cClose"
+        lore: []
+        slot: 26
+        action: "close"
+      
+      background:
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
+        lore: []
+        slots: [0,1,2,3,4,5,6,7,8,9,17,18,19,20,21,22,23,24,25]
+        action: "none"
+
+home-settings:
+  max-homes-per-page: 14
+  empty-slot-message: "&7No homes set. Use /sethome to create one."
+  teleport-delay: 3

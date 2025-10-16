@@ -1,0 +1,49 @@
+# RTP GUI Configuration
+# HyperTP - Author: H_Azee
+
+gui:
+  rtp:
+    title: "&6&lRandom Teleport"
+    rows: 1
+    items:
+      rtp-button:
+        material: "NETHER_STAR"
+        name: "&6&lRandom Teleport"
+        lore:
+          - "%cooldown_status%"
+          - ""
+          - "&7Click to teleport to a"
+          - "&7random safe location."
+          - ""
+          - "&eRange: &f%rtp_range%"
+        slot: 4
+        action: "rtp"
+      
+      close-button:
+        material: "BARRIER"
+        name: "&cClose"
+        lore: []
+        slot: 8
+        action: "close"
+      
+      info-button:
+        material: "BOOK"
+        name: "&eRTP Information"
+        lore:
+          - "&7Random Teleport will send you"
+          - "&7to a random safe location"
+          - "&7within the configured range."
+          - ""
+          - "&6Range: &f%rtp_range%"
+          - "&6Cooldown: &f%rtp_cooldown%s"
+        slot: 0
+        action: "none"
+
+rtp-settings:
+  min-distance: 100
+  max-distance: 1000
+  center-x: 0
+  center-z: 0
+  cooldown: 60
+  max-attempts: 100
+  safe-teleport: true

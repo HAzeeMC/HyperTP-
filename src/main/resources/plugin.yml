@@ -1,0 +1,107 @@
+name: HyperTP
+version: 1.1.0
+main: com.hazee.hypertp.HyperTP
+api-version: 1.21
+author: H_Azee
+description: Advanced teleportation plugin with GUI support
+website: https://github.com/H_Azee/HyperTP
+
+commands:
+  hypertp:
+    description: Main HyperTP command
+    aliases: [htp]
+    usage: /<command> [reload|help]
+  home:
+    description: Teleport to your home
+    aliases: [home]
+    usage: /<command> [name]
+  sethome:
+    description: Set a home
+    aliases: [sethome]
+    usage: /<command> <name>
+  delhome:
+    description: Delete a home
+    aliases: [delhome]
+    usage: /<command> <name>
+  homelist:
+    description: List your homes
+    aliases: [homelist, homes]
+    usage: /<command>
+  tpa:
+    description: Send teleport request
+    aliases: [tpa]
+    usage: /<command> <player>
+  tpahere:
+    description: Request player to teleport to you
+    aliases: [tpahere]
+    usage: /<command> <player>
+  tpaccept:
+    description: Accept teleport request
+    aliases: [tpaccept, tpayes]
+    usage: /<command>
+  tpdeny:
+    description: Deny teleport request
+    aliases: [tpdeny, tpano]
+    usage: /<command>
+  back:
+    description: Return to previous location
+    aliases: [back]
+    usage: /<command>
+  rtp:
+    description: Random teleport
+    aliases: [rtp]
+    usage: /<command>
+
+permissions:
+  hypertp.*:
+    description: All HyperTP permissions
+    children:
+      hypertp.home: true
+      hypertp.sethome: true
+      hypertp.delhome: true
+      hypertp.homelist: true
+      hypertp.tpa: true
+      hypertp.tpaccept: true
+      hypertp.tpdeny: true
+      hypertp.back: true
+      hypertp.rtp: true
+      hypertp.admin: true
+  hypertp.home:
+    description: Use home command
+    default: true
+  hypertp.sethome:
+    description: Set homes
+    default: true
+  hypertp.delhome:
+    description: Delete homes
+    default: true
+  hypertp.homelist:
+    description: List homes
+    default: true
+  hypertp.tpa:
+    description: Use TPA commands
+    default: true
+  hypertp.tpaccept:
+    description: Accept TPA requests
+    default: true
+  hypertp.tpdeny:
+    description: Deny TPA requests
+    default: true
+  hypertp.back:
+    description: Use back command
+    default: true
+  hypertp.rtp:
+    description: Use RTP command
+    default: true
+  hypertp.admin:
+    description: Admin permissions
+    default: op
+  hypertp.homes.1:
+    description: 1 home slot
+    default: true
+  hypertp.homes.3:
+    description: 3 home slots
+  hypertp.homes.5:
+    description: 5 home slots
+  hypertp.homes.10:
+    description: 10 home slots

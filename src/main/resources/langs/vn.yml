@@ -1,0 +1,78 @@
+# Vietnamese Language File
+# HyperTP Messages
+
+prefix: "&6[HyperTP]&r"
+
+no-permission: "&cBạn không có quyền sử dụng lệnh này."
+player-offline: "&cNgười chơi không trực tuyến."
+unknown-command: "&cLệnh không tồn tại. Sử dụng /htp help để xem trợ giúp."
+config-reloaded: "&aĐã tải lại cấu hình thành công."
+
+# Home Messages
+home-not-exist: "&cHome không tồn tại."
+home-set: "&aĐã đặt home &e%home% &athành công."
+home-deleted: "&aĐã xóa home &e%home% &athành công."
+invalid-home-name: "&cTên home không hợp lệ. Chỉ sử dụng chữ cái, số và dấu gạch dưới (tối đa 16 ký tự)."
+max-homes-reached: "&cBạn đã đạt đến giới hạn số lượng home (%max%)."
+sethome-usage: "&cSử dụng: /sethome <tên>"
+delhome-usage: "&cSử dụng: /delhome <tên>"
+home-list: "&6Home của bạn: &e%homes%"
+
+# Teleport Messages
+teleport-start: "&aĐang dịch chuyển sau &e%time% &agiây... Đừng di chuyển!"
+teleport-success-home: "&aĐã dịch chuyển đến home thành công."
+teleport-success-back: "&aĐã dịch chuyển về vị trí trước đó thành công."
+teleport-success-tpa: "&aDịch chuyển thành công."
+teleport-cancelled: "&cĐã hủy dịch chuyển vì bạn di chuyển."
+teleport-countdown: "&eĐang dịch chuyển sau %time% giây..."
+teleport-safe-failed: "&cKhông thể tìm thấy vị trí an toàn để dịch chuyển."
+
+# Cooldown Messages
+cooldown-home: "&cBạn phải chờ %time% giây trước khi sử dụng home lại."
+cooldown-back: "&cBạn phải chờ %time% giây trước khi sử dụng back lại."
+cooldown-rtp: "&cBạn phải chờ %time% giây trước khi sử dụng RTP lại."
+cooldown-tpa: "&cBạn phải chờ %time% giây trước khi sử dụng TPA lại."
+cooldown-gui: "&cBạn phải chờ %time% giây trước khi mở GUI lại."
+
+# TPA Messages
+tpa-request-sent: "&aĐã gửi yêu cầu dịch chuyển đến &e%player%&a."
+tpa-request-received: "&e%player% &ađã yêu cầu dịch chuyển đến bạn. Sử dụng &e/tpaccept &ahoặc &e/tpdeny&a."
+tpahere-request-sent: "&aĐã gửi yêu cầu để &e%player% &adịch chuyển đến bạn."
+tpahere-request-received: "&e%player% &amuốn bạn dịch chuyển đến họ. Sử dụng &e/tpaccept &ahoặc &e/tpdeny&a."
+no-pending-request: "&cBạn không có yêu cầu dịch chuyển nào đang chờ."
+request-accepted: "&aĐã chấp nhận yêu cầu dịch chuyển."
+request-denied: "&cĐã từ chối yêu cầu dịch chuyển."
+cannot-tpa-self: "&cBạn không thể gửi yêu cầu dịch chuyển đến chính mình."
+tpa-expired: "&cYêu cầu dịch chuyển đã hết hạn."
+tpa-cancelled: "&cĐã hủy yêu cầu dịch chuyển."
+
+# Back Messages
+no-back-location: "&cKhông tìm thấy vị trí trước đó."
+back-location-saved: "&aĐã lưu vị trí trước đó."
+
+# RTP Messages
+rtp-success: "&aBạn đã được dịch chuyển ngẫu nhiên!"
+rtp-failed: "&cKhông thể tìm thấy vị trí an toàn. Thử lại."
+rtp-searching: "&eĐang tìm kiếm vị trí an toàn..."
+rtp-dangerous-area: "&cKhông thể RTP từ khu vực này."
+
+# GUI Messages
+gui-opening: "&aĐang mở menu..."
+gui-no-homes: "&cBạn không có home nào."
+gui-home-teleport: "&aĐang dịch chuyển đến %home%..."
+
+# Help Message
+help-message:
+  - "&6&lHyperTP &7- &eLệnh Dịch Chuyển"
+  - "&e/home [tên] &7- Dịch chuyển đến home"
+  - "&e/sethome <tên> &7- Đặt một home"
+  - "&e/delhome <tên> &7- Xóa một home"
+  - "&e/homelist &7- Danh sách home (GUI)"
+  - "&e/tpa <người chơi> &7- Yêu cầu dịch chuyển đến người chơi"
+  - "&e/tpahere <người chơi> &7- Yêu cầu người chơi dịch chuyển đến bạn"
+  - "&e/tpaccept &7- Chấp nhận yêu cầu dịch chuyển"
+  - "&e/tpdeny &7- Từ chối yêu cầu dịch chuyển"
+  - "&e/back &7- Quay lại vị trí trước đó"
+  - "&e/rtp &7- Dịch chuyển ngẫu nhiên"
+  - "&e/htp reload &7- Tải lại cấu hình plugin"
+  - "&e/htp help &7- Hiển thị trợ giúp"

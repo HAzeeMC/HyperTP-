@@ -1,0 +1,87 @@
+# English Language File
+# HyperTP Messages
+
+prefix: "&6[HyperTP]&r"
+
+no-permission: "&cYou don't have permission to use this command."
+player-offline: "&cThat player is offline."
+unknown-command: "&cUnknown command. Use /htp help for help."
+config-reloaded: "&aConfiguration reloaded successfully."
+
+# Home Messages
+home-not-exist: "&cHome doesn't exist."
+home-set: "&aHome &e%home% &ahas been set."
+home-deleted: "&aHome &e%home% &ahas been deleted."
+invalid-home-name: "&cInvalid home name. Use only letters, numbers and underscores (max 16 characters)."
+max-homes-reached: "&cYou have reached the maximum number of homes (%max%)."
+sethome-usage: "&cUsage: /sethome <name>"
+delhome-usage: "&cUsage: /delhome <name>"
+home-list: "&6Your homes: &e%homes%"
+
+# Teleport Messages
+teleport-start: "&aTeleporting in &e%time% &aseconds... Don't move!"
+teleport-success-home: "&aTeleported to home successfully."
+teleport-success-back: "&aTeleported back successfully."
+teleport-success-tpa: "&aTeleport successful."
+teleport-cancelled: "&cTeleport cancelled because you moved."
+teleport-countdown: "&eTeleporting in %time% seconds..."
+teleport-safe-failed: "&cCould not find a safe location for teleport."
+
+# Cooldown Messages
+cooldown-home: "&cYou must wait %time% seconds before using home again."
+cooldown-back: "&cYou must wait %time% seconds before using back again."
+cooldown-rtp: "&cYou must wait %time% seconds before using RTP again."
+cooldown-tpa: "&cYou must wait %time% seconds before using TPA again."
+cooldown-gui: "&cYou must wait %time% seconds before opening GUI again."
+
+# TPA Messages
+tpa-request-sent: "&aTeleport request sent to &e%player%&a."
+tpa-request-received: "&e%player% &ahas requested to teleport to you. Use &e/tpaccept &aor &e/tpdeny&a."
+tpahere-request-sent: "&aRequest sent for &e%player% &ato teleport to you."
+tpahere-request-received: "&e%player% &awants you to teleport to them. Use &e/tpaccept &aor &e/tpdeny&a."
+no-pending-request: "&cYou don't have any pending teleport requests."
+request-accepted: "&aTeleport request accepted."
+request-denied: "&cTeleport request denied."
+cannot-tpa-self: "&cYou cannot send teleport request to yourself."
+tpa-expired: "&cThe teleport request has expired."
+tpa-cancelled: "&cTeleport request cancelled."
+
+# Back Messages
+no-back-location: "&cNo previous location found."
+back-location-saved: "&aPrevious location saved."
+
+# RTP Messages
+rtp-success: "&aYou have been randomly teleported!"
+rtp-failed: "&cCould not find a safe location. Try again."
+rtp-searching: "&eSearching for a safe location..."
+rtp-dangerous-area: "&cCannot RTP from this area."
+
+# GUI Messages
+gui-opening: "&aOpening menu..."
+gui-no-homes: "&cYou don't have any homes set."
+gui-home-teleport: "&aTeleporting to %home%..."
+
+# Admin Messages
+admin-reload: "&aPlugin reloaded successfully."
+admin-homes-reset: "&aAll homes have been reset."
+
+# Help Message
+help-message:
+  - "&6&lHyperTP &7- &eTeleportation Commands"
+  - "&e/home [name] &7- Teleport to a home"
+  - "&e/sethome <name> &7- Set a home"
+  - "&e/delhome <name> &7- Delete a home"
+  - "&e/homelist &7- List all homes (GUI)"
+  - "&e/tpa <player> &7- Request to teleport to player"
+  - "&e/tpahere <player> &7- Request player to teleport to you"
+  - "&e/tpaccept &7- Accept teleport request"
+  - "&e/tpdeny &7- Deny teleport request"
+  - "&e/back &7- Return to previous location"
+  - "&e/rtp &7- Random teleport"
+  - "&e/htp reload &7- Reload plugin configuration"
+  - "&e/htp help &7- Show this help message"
+
+# Cooldown Display
+cooldown-display:
+  action-bar: "&cCooldown: &e%type% &7- &6%time%s"
+  chat: "&cYou must wait &e%time% &cseconds before using &e%type%&c again."
