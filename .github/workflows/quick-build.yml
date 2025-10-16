@@ -1,0 +1,68 @@
+name: Quick JAR Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests for faster build'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  quick-build:
+    name: Quick JAR Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Quick compile check
+      run: |
+        echo "⚡ Quick compilation check..."
+        mvn -B clean compile
+        echo "✅ Compilation successful"
+
+    - name: Build JAR
+      run: |
+        echo "📦 Building JAR file..."
+        if [ "${{ github.event.inputs.skip_tests }}" = "true" ]; then
+          mvn -B package -DskipTests
+          echo "✅ JAR built (tests skipped)"
+        else
+          mvn -B package
+          echo "✅ JAR built (with tests)"
+        fi
+        
+        # Show JAR info
+        JAR_FILE=$(ls target/HyperTP-*.jar)
+        echo "🎯 Output: $JAR_FILE"
+        ls -la target/*.jar
+
+    - name: Upload JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-Quick-Build
+        path: target/HyperTP-*.jar
+        retention-days: 7
+
+    - name: Quick Build Summary
+      run: |
+        echo "⚡ Quick Build Complete" >> $GITHUB_STEP_SUMMARY
+        echo "======================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Type**: Quick JAR" >> $GITHUB_STEP_SUMMARY
+        echo "**Tests Skipped**: ${{ github.event.inputs.skip_tests }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "**Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📥 Download" >> $GITHUB_STEP_SUMMARY
+        echo "JAR file available in **Artifacts** as **HyperTP-Quick-Build**" >> $GITHUB_STEP_SUMMARY
