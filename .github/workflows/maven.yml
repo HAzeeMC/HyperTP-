@@ -1,0 +1,77 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build with Maven
+      run: mvn -B clean package --file pom.xml
+
+    - name: Test with Maven
+      run: mvn -B test --file pom.xml
+
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-JAR
+        path: target/HyperTP-*.jar
+        retention-days: 30
+
+    - name: Create GitHub Release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: target/HyperTP-*.jar
+        body: |
+          # HyperTP v${{ github.event.release.tag_name }}
+          
+          Advanced teleportation plugin with GUI support for Minecraft 1.21+
+          
+          ## Features
+          - ✅ Home system with GUI
+          - ✅ TPA request system  
+          - ✅ Random teleport (RTP)
+          - ✅ Back to previous location
+          - ✅ Multi-language support (EN/VN)
+          - ✅ Folia & Paper support
+          - ✅ Fully customizable
+          
+          ## Requirements
+          - Minecraft 1.21+
+          - Paper/Folia server
+          - Java 21
+          
+          Author: H_Azee
+
+    - name: Upload to GitHub Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-Package
+        path: |
+          target/HyperTP-*.jar
+          target/*.md
+        retention-days: 30
