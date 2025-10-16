@@ -1,0 +1,56 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  nightly:
+    name: Nightly Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Build nightly JAR
+      run: |
+        echo "🌙 Building nightly version..."
+        mvn -B clean package -DskipTests
+        
+        JAR_FILE=$(ls target/HyperTP-*.jar)
+        echo "✅ Nightly JAR: $JAR_FILE"
+        
+        # Add build timestamp to filename
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        cp "$JAR_FILE" "target/HyperTP-nightly-$TIMESTAMP.jar"
+        ls -la target/HyperTP-*.jar
+
+    - name: Upload nightly JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: HyperTP-Nightly
+        path: target/HyperTP-*.jar
+        retention-days: 7
+
+    - name: Nightly Build Summary
+      run: |
+        echo "🌙 Nightly Build Complete" >> $GITHUB_STEP_SUMMARY
+        echo "========================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Type**: Nightly" >> $GITHUB_STEP_SUMMARY
+        echo "**Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📥 Download" >> $GITHUB_STEP_SUMMARY
+        echo "Latest JAR available in **Artifacts** as **HyperTP-Nightly**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## ⚠️ Note" >> $GITHUB_STEP_SUMMARY
+        echo "Nightly builds may contain untested features. Use in production at your own risk." >> $GITHUB_STEP_SUMMARY
